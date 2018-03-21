@@ -50,6 +50,11 @@ struct SimParams {
   float         annih_fraction    = 0.01;
   float         track_percent     = 0.2;
 
+  // GR specific parameters
+  float      bh_a                 = 0.9;
+  float      bh_rg                = 2.0;
+  float      fieldline_theta      = 0.5236; // 30 degrees
+
   std::array<std::string, 3> grid_config;
   std::array<std::string, 3> data_grid_config;
 

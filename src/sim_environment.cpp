@@ -111,22 +111,22 @@ Environment::setup_domain(int dimx, int dimy, int dimz) {
 
   for (int i = 0; i < 3; i++) {
     m_domain_info.cart_dims[i] = dims[i];
-  //   if (i < m_domain_info.dim) {
-  //     m_domain_info.cart_neighbor_left[i] =
-  //         m_comm->cartesian().neighbor_left(i);
-  //     // Logger::print_debug_all("On rank {}, left neighbor in dir {} is ({})", m_domain_info.rank, i, m_domain_info.cart_neighbor_left[i]);
-  //     if (m_domain_info.cart_neighbor_left[i] == NEIGHBOR_NULL)
-  //       m_domain_info.is_boundary[i*2] = true;
+    if (i < m_domain_info.dim) {
+      m_domain_info.cart_neighbor_left[i] =
+          m_comm->cartesian().neighbor_left(i);
+      // Logger::print_debug_all("On rank {}, left neighbor in dir {} is ({})", m_domain_info.rank, i, m_domain_info.cart_neighbor_left[i]);
+      if (m_domain_info.cart_neighbor_left[i] == NEIGHBOR_NULL)
+        m_domain_info.is_boundary[i*2] = true;
 
-  //     m_domain_info.cart_neighbor_right[i] =
-  //         m_comm->cartesian().neighbor_right(i);
-  //     if (m_domain_info.cart_neighbor_right[i] == NEIGHBOR_NULL)
-  //       m_domain_info.is_boundary[i*2 + 1] = true;
-  //     // Logger::print_debug_all("On rank {}, right neighbor in dir {} is ({})", m_domain_info.rank, i, m_domain_info.cart_neighbor_right[i]);
-  //   } else {
-  //     m_domain_info.cart_neighbor_left[i] =
-  //         m_domain_info.cart_neighbor_right[i] = NEIGHBOR_NULL;
-  //   }
+      m_domain_info.cart_neighbor_right[i] =
+          m_comm->cartesian().neighbor_right(i);
+      if (m_domain_info.cart_neighbor_right[i] == NEIGHBOR_NULL)
+        m_domain_info.is_boundary[i*2 + 1] = true;
+      // Logger::print_debug_all("On rank {}, right neighbor in dir {} is ({})", m_domain_info.rank, i, m_domain_info.cart_neighbor_right[i]);
+    } else {
+      m_domain_info.cart_neighbor_left[i] =
+          m_domain_info.cart_neighbor_right[i] = NEIGHBOR_NULL;
+    }
   }
 
   // Debug info for boundary

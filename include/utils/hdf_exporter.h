@@ -13,11 +13,14 @@ namespace Aperture {
 
 class ConfigFile;
 class CommandArgs;
+class MPIComm;
 
 template <typename T>
 struct dataset {
   std::string name;
-  std::vector<int> dims;
+  std::vector<std::size_t> dims;
+  std::vector<std::size_t> dims_t;
+  std::vector<std::size_t> offsets;
   int ndims;
   T* data;
 };
@@ -38,6 +41,7 @@ class DataExporter
 
   ~DataExporter();
 
+  void WriteOutput(MPIComm& comm, int timestep, float time);
   void WriteOutput(int timestep, float time);
 
   void AddArray(const std::string& name, float* data, int* dims, int ndims);

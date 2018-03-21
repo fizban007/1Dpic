@@ -6,9 +6,8 @@
 #include "utils/logger.h"
 
 namespace Aperture {
-
-
-ParticlePusher_Geodesic::ParticlePusher_Geodesic() {}
+ParticlePusher_Geodesic::ParticlePusher_Geodesic(double a, double rg, double theta)
+    : m_metric(a, rg, theta) {}
 
 ParticlePusher_Geodesic::~ParticlePusher_Geodesic() {}
 
@@ -28,9 +27,10 @@ ParticlePusher_Geodesic::push(SimData& data, double dt) {
       // Logger::print_info("Pushing particle at cell {} and position {}",
       //                    ptc.cell[idx], x);
 
-      lorentz_push(particles, idx, x, data.E, data.B, dt);
-      extra_force(particles, idx, x, grid, dt);
-      move_ptc(particles, idx, x, grid, dt);
+      // lorentz_push(particles, idx, x, data.E, data.B, dt);
+      gr_push(particles, idx, x, data.E, data.B, dt);
+      // extra_force(particles, idx, x, grid, dt);
+      move_ptc_gr(particles, idx, x, grid, dt);
     }
   }
 }
@@ -45,6 +45,31 @@ ParticlePusher_Geodesic::move_ptc(Particles& particles, Index_t idx,
 
   ptc.gamma[idx] = sqrt(1.0 + ptc.p1[idx] * ptc.p1[idx]);
   double v = ptc.p1[idx] / ptc.gamma[idx];
+  // Logger::print_info("Before move, v is {}, gamma is {}", v, ptc.gamma[idx]);
+  ptc.dx1[idx] = v * dt / grid.mesh().delta[0];
+  ptc.x1[idx] += ptc.dx1[idx];
+
+  // Compute the change in particle cell
+  auto c = mesh.get_cell_3d(cell);
+  int delta_cell = (int)std::floor(ptc.x1[idx]);
+  // std::cout << delta_cell << std::endl;
+  c[0] += delta_cell;
+  // Logger::print_info("After move, c is {}, x1 is {}", c, ptc.x1[idx]);
+
+  ptc.cell[idx] = mesh.get_idx(c[0], c[1], c[2]);
+  // std::cout << ptc.x1[idx] << ", " << ptc.cell[idx] << std::endl;
+  ptc.x1[idx] -= (Pos_t)delta_cell;
+  // std::cout << ptc.x1[idx] << ", " << ptc.cell[idx] << std::endl;
+}
+
+void
+ParticlePusher_Geodesic::move_ptc_gr(Particles &particles, Index_t idx, double x, const Grid &grid, double dt) {
+  auto& ptc = particles.data();
+  auto& mesh = grid.mesh();
+  int cell = ptc.cell[idx];
+
+  ptc.gamma[idx] = m_metric.gamma_p(x, ptc.p1[idx]);
+  double v = m_metric.gammarr(x) * ptc.p1[idx] / ptc.gamma[idx];
   // Logger::print_info("Before move, v is {}, gamma is {}", v, ptc.gamma[idx]);
   ptc.dx1[idx] = v * dt / grid.mesh().delta[0];
   ptc.x1[idx] += ptc.dx1[idx];
@@ -82,7 +107,35 @@ ParticlePusher_Geodesic::lorentz_push(Particles& particles, Index_t idx,
       // Logger::print_info("in lorentz, c = {}, E = {}, rel_x = {}", c, vE, rel_x);
 
       ptc.p1[idx] += particles.charge() * vE[0] * dt / particles.mass();
-      ptc.gamma[idx] = sqrt(1.0 + ptc.p1[idx] * ptc.p1[idx]);
+      // ptc.gamma[idx] = sqrt(1.0 + ptc.p1[idx] * ptc.p1[idx]);
+      ptc.gamma[idx] = m_metric.gamma_p(x, ptc.p1[idx]);
+    }
+  }
+}
+
+void
+ParticlePusher_Geodesic::gr_push(Particles &particles, Index_t idx, double x, const VectorField<Scalar> &E, const VectorField<Scalar> &B, double dt) {
+  auto& ptc = particles.data();
+  if (E.grid().dim() == 1) {
+    // Logger::print_debug("in lorentz, flag is {}", ptc.flag[idx]);
+    if (!check_bit(ptc.flag[idx], ParticleFlag::ignore_EM)) {
+      auto& mesh = E.grid().mesh();
+      int cell = ptc.cell[idx];
+      Vec3<Pos_t> rel_x{ptc.x1[idx], 0.0, 0.0};
+
+      double p1 = ptc.p1[idx];
+      double gamma = m_metric.gamma_p(x, p1);
+      ptc.p1[idx] -= m_metric.dr_alpha(x) * m_metric.alpha(x) * gamma +
+                     p1 * p1 * m_metric.dr_gammarr(x) / (2.0 * gamma);
+
+      auto c = mesh.get_cell_3d(cell);
+      // std::cout << c << std::endl;
+      Vec3<Scalar> vE = E.interpolate(c, rel_x, m_interp);
+      // Logger::print_info("in lorentz, c = {}, E = {}, rel_x = {}", c, vE, rel_x);
+
+      ptc.p1[idx] += m_metric.alpha(x) * particles.charge() * vE[0] * dt / (m_metric.gammarr(x) * particles.mass());
+      // ptc.gamma[idx] = sqrt(1.0 + ptc.p1[idx] * ptc.p1[idx]);
+      ptc.gamma[idx] = m_metric.gamma_p(x, ptc.p1[idx]);
     }
   }
 }

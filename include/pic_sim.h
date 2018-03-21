@@ -11,6 +11,8 @@
 
 namespace Aperture {
 
+class DomainCommunicator;
+
 /// Simulator class for PIC, bundling together different modules
 class PICSim {
  public:

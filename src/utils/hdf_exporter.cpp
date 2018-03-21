@@ -8,8 +8,11 @@
 #include <time.h>
 #include <fstream>
 #include "nlohmann/json.hpp"
+#include "highfive/H5File.hpp"
 
 using json = nlohmann::json;
+namespace HF = HighFive;
+// using namespace HighFive;
 
 namespace Aperture {
 
@@ -114,30 +117,24 @@ void
 DataExporter::WriteOutput(int timestep, float time) {
   try {
     std::string filename = outputDirectory + filePrefix + fmt::format("{0:06d}.h5", timestep);
-    H5::H5File *file = new H5::H5File(filename, H5F_ACC_TRUNC);
+    // H5::H5File *file = new H5::H5File(filename, H5F_ACC_TRUNC);
+    HF::File file(filename, HF::File::ReadWrite | HF::File::Create | HF::File::Truncate);
 
     for (auto& ds : dbFloat) {
-      hsize_t* sizes = new hsize_t[ds.ndims];
-      for (int i = 0; i < ds.ndims; i++)
-        sizes[i] = ds.dims[i];
-      H5::DataSpace space(ds.ndims, sizes);
-      H5::DataSet *dataset = new H5::DataSet(file->createDataSet(ds.name, H5::PredType::NATIVE_FLOAT, space));
-      dataset->write((void*)ds.data, H5::PredType::NATIVE_FLOAT);
+      // H5::DataSpace space(ds.ndims, sizes);
+      // H5::DataSet *dataset = new H5::DataSet(file->createDataSet(ds.name, H5::PredType::NATIVE_FLOAT, space));
+      // dataset->write((void*)ds.data, H5::PredType::NATIVE_FLOAT);
+      HF::DataSet dataset = file.createDataSet<float>(ds.name, HF::DataSpace(ds.dims));
 
-      delete[] sizes;
-      delete dataset;
+      dataset.write(ds.data);
+
+      // delete[] sizes;
+      // delete dataset;
     }
 
     for (auto& ds : dbDouble) {
-      hsize_t* sizes = new hsize_t[ds.ndims];
-      for (int i = 0; i < ds.ndims; i++)
-        sizes[i] = ds.dims[i];
-      H5::DataSpace space(ds.ndims, sizes);
-      H5::DataSet *dataset = new H5::DataSet(file->createDataSet(ds.name, H5::PredType::NATIVE_DOUBLE, space));
-      dataset->write((void*)ds.data, H5::PredType::NATIVE_DOUBLE);
-
-      delete[] sizes;
-      delete dataset;
+      HF::DataSet dataset = file.createDataSet<double>(ds.name, HF::DataSpace(ds.dims));
+      dataset.write(ds.data);
     }
 
     for (auto& ds : dbPtcData) {
@@ -152,15 +149,22 @@ DataExporter::WriteOutput(int timestep, float time) {
           idx += 1;
         }
       }
-      hsize_t sizes[1] = { idx };
-      H5::DataSpace space(1, sizes);
-      H5::DataSet *dataset_x = new H5::DataSet(file->createDataSet(name_x, H5::PredType::NATIVE_FLOAT, space));
-      dataset_x->write((void*)ds.data_x.data(), H5::PredType::NATIVE_FLOAT);
-      H5::DataSet *dataset_p = new H5::DataSet(file->createDataSet(name_p, H5::PredType::NATIVE_FLOAT, space));
-      dataset_p->write((void*)ds.data_p.data(), H5::PredType::NATIVE_FLOAT);
+      // hsize_t sizes[1] = { idx };
+      std::vector<std::size_t> sizes(1);
+      sizes[0] = idx;
+      // H5::DataSpace space(1, sizes);
+      // H5::DataSet *dataset_x = new H5::DataSet(file->createDataSet(name_x, H5::PredType::NATIVE_FLOAT, space));
+      // dataset_x->write((void*)ds.data_x.data(), H5::PredType::NATIVE_FLOAT);
+      // H5::DataSet *dataset_p = new H5::DataSet(file->createDataSet(name_p, H5::PredType::NATIVE_FLOAT, space));
+      // dataset_p->write((void*)ds.data_p.data(), H5::PredType::NATIVE_FLOAT);
 
-      delete dataset_x;
-      delete dataset_p;
+      // delete dataset_x;
+      // delete dataset_p;
+      HF::DataSet dataset_x = file.createDataSet<float>(name_x, HF::DataSpace(sizes));
+      HF::DataSet dataset_p = file.createDataSet<float>(name_p, HF::DataSpace(sizes));
+
+      dataset_x.write(ds.data_x.data());
+      dataset_p.write(ds.data_p.data());
 
       Logger::print_info("Written {} tracked particles", idx);
     }
@@ -177,19 +181,25 @@ DataExporter::WriteOutput(int timestep, float time) {
           idx += 1;
         }
       }
-      hsize_t sizes[1] = { idx };
-      H5::DataSpace space(1, sizes);
-      H5::DataSet *dataset_x = new H5::DataSet(file->createDataSet(name_x, H5::PredType::NATIVE_FLOAT, space));
-      dataset_x->write((void*)ds.data_x.data(), H5::PredType::NATIVE_FLOAT);
-      H5::DataSet *dataset_p = new H5::DataSet(file->createDataSet(name_p, H5::PredType::NATIVE_FLOAT, space));
-      dataset_p->write((void*)ds.data_p.data(), H5::PredType::NATIVE_FLOAT);
+      // hsize_t sizes[1] = { idx };
+      std::vector<std::size_t> sizes(1);
+      sizes[0] = idx;
+      // H5::DataSpace space(1, sizes);
+      // H5::DataSet *dataset_x = new H5::DataSet(file->createDataSet(name_x, H5::PredType::NATIVE_FLOAT, space));
+      // dataset_x->write((void*)ds.data_x.data(), H5::PredType::NATIVE_FLOAT);
+      // H5::DataSet *dataset_p = new H5::DataSet(file->createDataSet(name_p, H5::PredType::NATIVE_FLOAT, space));
+      // dataset_p->write((void*)ds.data_p.data(), H5::PredType::NATIVE_FLOAT);
+      HF::DataSet dataset_x = file.createDataSet<float>(name_x, HF::DataSpace(sizes));
+      HF::DataSet dataset_p = file.createDataSet<float>(name_p, HF::DataSpace(sizes));
 
-      delete dataset_x;
-      delete dataset_p;
+      dataset_x.write(ds.data_x.data());
+      dataset_p.write(ds.data_p.data());
+      // delete dataset_x;
+      // delete dataset_p;
 
       Logger::print_info("Written {} tracked photons", idx);
     }
-    delete file;
+    // delete file;
   }
   // catch failure caused by the H5File operations
   catch( H5::FileIException &error )
@@ -236,7 +246,10 @@ DataExporter::writeConfig(const ConfigFile &config, const CommandArgs &args) {
     {"track_pct", c.track_percent},
     {"ic_path", c.ic_path},
     {"N_steps", args.steps()},
-    {"data_interval", args.data_interval()}
+    {"data_interval", args.data_interval()},
+    {"bh_a", c.bh_a},
+    {"bh_rg", c.bh_rg},
+    {"fieldline_theta", c.fieldline_theta}
   };
 
   std::ofstream o(filename);

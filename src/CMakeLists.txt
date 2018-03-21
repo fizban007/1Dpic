@@ -9,7 +9,7 @@ endif()
 set(Aperture_src
   "commandline_args.cpp" "config_file.cpp" "sim_data.cpp" "sim_environment.cpp" "pic_sim.cpp" "domain_communicator.cpp"
   # "pic_sim.cpp" "boundary_conditions.cpp"
-  "data/multi_array.cpp" "data/grid.cpp" "data/fields.cpp" "data/particles.cpp" "data/photons.cpp"
+  "data/multi_array.cpp" "data/grid.cpp" "data/fields.cpp" "data/particles.cpp" "data/photons.cpp" "data/metric_terms.cpp"
 #   # "algorithms/finite_diff.cpp" "algorithms/field_solver_finite_diff.cpp" "algorithms/field_solver_integral.cpp"
 #   "algorithms/field_solver_integral.cpp" "algorithms/current_deposit_Esirkepov.cpp" "algorithms/ptc_pusher_geodesic.cpp" "algorithms/solve.cpp"
 #   # "algorithms/ptc_pusher_mapping.cpp"

@@ -1,8 +1,9 @@
 #ifndef _FIELD_SOLVER_INTEGRAL_H_
 #define _FIELD_SOLVER_INTEGRAL_H_
 
-#include <vector>
 #include "field_solver.h"
+#include <vector>
+#include "data/metric_terms.h"
 
 namespace Aperture {
 
@@ -19,11 +20,12 @@ class FieldSolver_Integral : public FieldSolver
   void compute_E_update(vfield_t& E, const vfield_t& B, const vfield_t& J, double dt);
   void compute_B_update(vfield_t& B, const vfield_t& E, double dt);
 
-  virtual void set_background_j(const vfield_t& J);
+  virtual void set_background_j(const vfield_t& J) override;
 
  private:
   vfield_t m_dE, m_dB;
   vfield_t m_background_j;
+  MetricTerms m_metric;
 }; // ----- end of class field_solver_integral : public field_solver -----
 
 

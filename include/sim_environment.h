@@ -19,7 +19,6 @@
 namespace Aperture {
 
 struct SimData;
-class DomainCommunicator;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///  Class of the simulation environment. This class holds the basic information

@@ -29,7 +29,7 @@ PICSim::PICSim(Environment& env) : m_env(env) {
   // int interp_order = m_env.conf().interpolation_order;
 
   // Implement particle pusher
-  m_pusher = std::make_unique<ParticlePusher_Geodesic>();
+  m_pusher = std::make_unique<ParticlePusher_Geodesic>(env.conf().bh_a, env.conf().bh_rg, env.conf().fieldline_theta);
   m_pusher->set_periodic(env.conf().boundary_periodic[0]);
   m_pusher->set_interp_order(env.conf().interpolation_order);
 
@@ -42,17 +42,17 @@ PICSim::PICSim(Environment& env) : m_env(env) {
   // m_pusher -> set_radiation(bool radiation)
 
   // Register communication callbacks
-  m_depositer->register_current_callback(
-      [this](VectorField<Scalar>& j) { m_comm->put_guard_cells(j); });
+  // m_depositer->register_current_callback(
+  //     [this](VectorField<Scalar>& j) { m_comm->put_guard_cells(j); });
 
-  m_depositer->register_rho_callback(
-      [this](ScalarField<Scalar>& rho) { m_comm->put_guard_cells(rho); });
+  // m_depositer->register_rho_callback(
+  //     [this](ScalarField<Scalar>& rho) { m_comm->put_guard_cells(rho); });
 
-  m_field_solver->register_comm_callback(
-      [this](VectorField<Scalar>& f) -> void { m_comm->get_guard_cells(f); });
+  // m_field_solver->register_comm_callback(
+  //     [this](VectorField<Scalar>& f) -> void { m_comm->get_guard_cells(f); });
 
-  m_field_solver->register_comm_callback(
-      [this](ScalarField<Scalar>& f) -> void { m_comm->get_guard_cells(f); });
+  // m_field_solver->register_comm_callback(
+  //     [this](ScalarField<Scalar>& f) -> void { m_comm->get_guard_cells(f); });
 
   // auto &comm = *m_comm;
   // std::function<void(VectorField<Scalar>&)> vcall = [&comm](VectorField<Scalar>& f) -> void { comm.get_guard_cells(f); };
