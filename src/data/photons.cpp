@@ -114,7 +114,7 @@ Photons::emit_photons(Particles &electrons, Particles &positrons, const Quadmesh
       double p_i = std::abs(electrons.data().p1[n]);
       electrons.data().p1[n] *= sqrt(gamma_f * gamma_f - 1.0) / p_i;
       double l_photon = draw_photon_freepath(std::abs(E_ph));
-      if (l_photon > mesh.sizes[0] || std::abs(E_ph) < 10.0) continue;
+      // if (l_photon > mesh.sizes[0] || std::abs(E_ph) < 10.0) continue;
       // track a fraction of the secondary particles and photons
       if (!trace_photons) {
         double p_sec = sqrt(0.25 * E_ph * E_ph - 1.0);
@@ -151,7 +151,7 @@ Photons::emit_photons(Particles &electrons, Particles &positrons, const Quadmesh
       double p_i = std::abs(positrons.data().p1[n]);
       positrons.data().p1[n] *= sqrt(gamma_f * gamma_f - 1.0) / p_i;
       double l_photon = draw_photon_freepath(std::abs(E_ph));
-      if (l_photon > mesh.sizes[0] || std::abs(E_ph) < 10.0) continue;
+      // if (l_photon > mesh.sizes[0] || std::abs(E_ph) < 10.0) continue;
       // if (std::abs(E_ph) < 100.0) continue;
       // track 10% of the secondary particles
       if (!trace_photons) {
@@ -185,14 +185,14 @@ Photons::move(const Grid& grid, double dt) {
     double pos = mesh.pos(0, cell, m_data.x1[idx]);
 
     // Censor photons that are not converting inside the box
-    if (p < 0 && m_data.path_left[idx] > pos) {
-      erase(idx);
-      continue;
-    }
-    if (p > 0 && m_data.path_left[idx] > mesh.sizes[0] - pos) {
-      erase(idx);
-      continue;
-    }
+    // if (p < 0 && m_data.path_left[idx] > pos) {
+    //   erase(idx);
+    //   continue;
+    // }
+    // if (p > 0 && m_data.path_left[idx] > mesh.sizes[0] - pos) {
+    //   erase(idx);
+    //   continue;
+    // }
 
 
     m_data.x1[idx] += sgn(p) * dt / mesh.delta[0];

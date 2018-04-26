@@ -42,7 +42,7 @@ ParticlePusher_Geodesic::push(SimData& data, double dt) {
       //                    ptc.cell[idx], x);
 
       lorentz_push(particles, idx, x, data.E, data.B, dt);
-      extra_force(particles, idx, x, grid, dt);
+      // extra_force(particles, idx, x, grid, dt);
       move_ptc(particles, idx, x, grid, dt);
     }
   }
@@ -108,9 +108,10 @@ ParticlePusher_Geodesic::lorentz_push(Particles& particles, Index_t idx,
       double p = ptc.p1[idx];
       double beta = beta_phi(x/mesh.sizes[0]);
       double g = gamma(beta, p);
-      double f = (g - (beta < 0.0 ? -1.0 : 1.0) * p) / (1.0 + beta * beta);
-      ptc.p1[idx] += (beta / g) * f * f * dt / (0.5 * mesh.sizes[0]);
+      // double f = (g - (beta < 0.0 ? -1.0 : 1.0) * p) / (1.0 + beta * beta);
+      // ptc.p1[idx] += (beta / g) * f * f * dt / (0.5 * mesh.sizes[0]);
       ptc.p1[idx] += particles.charge() * vE[0] * dt / particles.mass();
+      // Logger::print_info("in lorentz, q = {}, m = {}", particles.charge(), particles.mass());
 
       // double b = beta_phi(x/mesh.sizes[0]);
       // double lim = std::sqrt((b*b - 1.0)*(b*b + 1.0));
