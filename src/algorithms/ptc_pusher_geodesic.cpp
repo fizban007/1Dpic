@@ -48,7 +48,8 @@ double gamma(double beta_phi, double p) {
   // double result = -p * b2 / std::sqrt(1.0 + b2) + std::sqrt(p*p/(1.0 + b2) + (1.0 - b2));
   // result *= 1.0 / (1.0 - b2);
 
-  return std::sqrt(1.0 + p*p + b2);
+  // return std::sqrt(1.0 + p*p + b2);
+  return std::sqrt(1.0 + p*p);
 }
 
 ParticlePusher_Geodesic::ParticlePusher_Geodesic() {}
@@ -61,7 +62,7 @@ ParticlePusher_Geodesic::push(SimData& data, double dt) {
   auto& grid = data.E.grid();
   auto& mesh = grid.mesh();
   for (auto& particles : data.particles) {
-#ifdef __AVX2_CUSTOM__
+#ifdef __AVX2_XXCUSTOM__
     auto& ptc = particles.data();
     for (Index_t idx = 0; idx + 3 < particles.number(); idx+=4) {
       // Lorentz push in avx2
@@ -135,7 +136,8 @@ ParticlePusher_Geodesic::move_ptc(Particles& particles, Index_t idx,
     int cell = ptc.cell[idx];
 
     // ptc.gamma[idx] = sqrt(1.0 + ptc.p1[idx] * ptc.p1[idx]);
-    double beta = beta_phi(x/mesh.sizes[0]);
+    // double beta = beta_phi(x/mesh.sizes[0]);
+    double beta = 0.0;
     double g = gamma(beta, ptc.p1[idx]);
     // if (g < 1.0) g = 1.0;
     // if (std::abs(beta_phi(x/mesh.sizes[0])) > 1.0)
@@ -144,10 +146,11 @@ ParticlePusher_Geodesic::move_ptc(Particles& particles, Index_t idx,
     // double v = ptc.p1[idx] / ptc.gamma[idx];
     // Logger::print_info("Before move, v is {}, gamma is {}", v, ptc.gamma[idx]);
 
-    double v = ((beta < 0.0 ? -1.0 : 1.0) * ptc.p1[idx] / g + beta * beta) / (1.0 + beta * beta);
-    if (beta < 0.0) {
-      v *= -1.0;
-    }
+    // double v = ((beta < 0.0 ? -1.0 : 1.0) * ptc.p1[idx] / g + beta * beta) / (1.0 + beta * beta);
+    // if (beta < 0.0) {
+    //   v *= -1.0;
+    // }
+    double v = ptc.p1[idx]/g;
     ptc.dx1[idx] = v * dt / grid.mesh().delta[0];
     ptc.x1[idx] += ptc.dx1[idx];
 
@@ -186,11 +189,11 @@ ParticlePusher_Geodesic::lorentz_push(Particles& particles, Index_t idx,
       Scalar vE = E.data(0)[cell] * rel_x + E.data(0)[cell - 1] * (1.0 - rel_x);
       // Logger::print_info("in lorentz, c = {}, E = {}, rel_x = {}", c, vE, rel_x);
 
-      double p = ptc.p1[idx];
-      double beta = beta_phi(x/mesh.sizes[0]);
-      double g = gamma(beta, p);
-      double f = (g - (beta < 0.0 ? -1.0 : 1.0) * p) / (1.0 + beta * beta);
-      ptc.p1[idx] += (beta / g) * f * f * dt / (0.5 * mesh.sizes[0]);
+      // double p = ptc.p1[idx];
+      // double beta = beta_phi(x/mesh.sizes[0]);
+      // double g = gamma(beta, p);
+      // double f = (g - (beta < 0.0 ? -1.0 : 1.0) * p) / (1.0 + beta * beta);
+      // ptc.p1[idx] += (beta / g) * f * f * dt / (0.5 * mesh.sizes[0]);
       ptc.p1[idx] += particles.charge() * vE * dt / particles.mass();
 
     }

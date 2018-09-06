@@ -78,8 +78,8 @@ PICSim::step(Aperture::SimData &data, uint32_t step) {
   double dt = m_env.conf().delta_t;
   // TODO: add particle logic
   m_pusher->push(data, dt);
-  m_depositer->deposit(data, dt);
-  m_field_solver->update_fields(data, dt);
+  // m_depositer->deposit(data, dt);
+  // m_field_solver->update_fields(data, dt);
   data.photons.emit_photons(data.particles[0], data.particles[1], data.E.grid().mesh());
   data.photons.move(data.E.grid(), dt);
   data.photons.convert_pairs(data.particles[0], data.particles[1]);
